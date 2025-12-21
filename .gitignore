@@ -10,3 +10,7 @@ build/
 .idea/
 frontend/dist/
 backend/node_modules/
+frontend/node_modules/
+*.mp4
+*.mov
+*.avi
