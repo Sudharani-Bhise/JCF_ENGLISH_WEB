@@ -1,5 +1,5 @@
 import { motion as Motion } from "framer-motion";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import student1 from "../assets/media/testimonials/student1.jpg";
 import student2 from "../assets/media/testimonials/student2.jpg";
@@ -9,6 +9,8 @@ import student5 from "../assets/media/testimonials/student5.jpg";
 import student6 from "../assets/media/testimonials/student6.jpg";
 import student7 from "../assets/media/testimonials/student7.jpg";
 import student8 from "../assets/media/testimonials/student8.jpg";
+
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api';
 
 /* 🔹 DEFAULT testimonials (fallback) */
 const defaultTestimonials = [
@@ -33,14 +35,27 @@ const fadeUp = {
 
 export default function Testimonials() {
   const scrollRef = useRef(null);
-  const [testimonials, _setTestimonials] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("testimonials"));
-      return saved && saved.length > 0 ? saved : defaultTestimonials;
-    } catch {
-      return defaultTestimonials;
-    }
-  });
+  const [testimonials, setTestimonials] = useState(defaultTestimonials);
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/testimonials`);
+        const data = await res.json();
+        if (data.testimonials && data.testimonials.length > 0) {
+          // Combine default + new testimonials and reverse (newest first)
+          const combined = [...defaultTestimonials, ...data.testimonials];
+          setTestimonials(combined.reverse());
+        } else {
+          setTestimonials(defaultTestimonials);
+        }
+      } catch (err) {
+        console.error('Failed to fetch testimonials:', err);
+        setTestimonials(defaultTestimonials);
+      }
+    };
+    fetchTestimonials();
+  }, []);
 
   const scrollLeft = () => {
     if (scrollRef.current) {

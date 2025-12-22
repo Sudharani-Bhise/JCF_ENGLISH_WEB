@@ -23,7 +23,7 @@ export default function AdminProfile() {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("adminToken");
       const res = await fetch("http://localhost:4000/api/admin/profile", {
         method: "PUT",
         headers: {
@@ -37,7 +37,7 @@ export default function AdminProfile() {
       if (!res.ok) throw new Error(data.message || "Update failed");
 
       // update context & localStorage
-      localStorage.setItem("currentUser", JSON.stringify(data.user));
+      localStorage.setItem("adminUser", JSON.stringify(data.user));
       setAdmin(data.user);
       setOldPassword("");
       setNewPassword("");

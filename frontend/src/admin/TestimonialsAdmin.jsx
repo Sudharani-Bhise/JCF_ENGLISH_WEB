@@ -1,16 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion as Motion } from "framer-motion";
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api';
+
 export default function TestimonialsAdmin() {
-  const [testimonials, setTestimonials] = useState(() => JSON.parse(localStorage.getItem("testimonials")) || []);
+  const [testimonials, setTestimonials] = useState([]);
   const [name, setName] = useState("");
   const [text, setText] = useState("");
   const [image, setImage] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  // 🔹 Save to localStorage
-  const saveToStorage = (data) => {
-    localStorage.setItem("testimonials", JSON.stringify(data));
-    setTestimonials(data);
+  useEffect(() => {
+    fetchTestimonials();
+  }, []);
+
+  const fetchTestimonials = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/testimonials`);
+      const data = await res.json();
+      if (data.testimonials) {
+        setTestimonials(data.testimonials);
+      }
+    } catch (err) {
+      console.error('Failed to fetch testimonials:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 🔹 Image upload (base64)
@@ -25,32 +40,64 @@ export default function TestimonialsAdmin() {
     reader.readAsDataURL(file);
   };
 
-  // 🔹 Add testimonial
-  const addTestimonial = () => {
+  // 🔹 Add testimonial via API
+  const addTestimonial = async () => {
     if (!name || !text || !image) {
       alert("Please fill all fields & upload image");
       return;
     }
 
-    const newTestimonial = {
-      id: Date.now(),
-      name,
-      text,
-      img: image,
-    };
-
-    const updated = [newTestimonial, ...testimonials];
-    saveToStorage(updated);
-
-    setName("");
-    setText("");
-    setImage("");
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_BASE}/admin/testimonials`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name,
+          text,
+          img: image
+        })
+      });
+      
+      const data = await res.json();
+      if (data.testimonial) {
+        setTestimonials([data.testimonial, ...testimonials]);
+        setName("");
+        setText("");
+        setImage("");
+        alert('Testimonial added successfully!');
+      }
+    } catch (err) {
+      console.error('Failed to add testimonial:', err);
+      alert('Failed to add testimonial');
+    }
   };
 
-  // 🔹 Delete testimonial
-  const deleteTestimonial = (id) => {
-    const updated = testimonials.filter((t) => t.id !== id);
-    saveToStorage(updated);
+  // 🔹 Delete testimonial via API
+  const deleteTestimonial = async (id) => {
+    if (!confirm('Delete this testimonial?')) return;
+    
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_BASE}/admin/testimonials/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (res.ok) {
+        setTestimonials(testimonials.filter((t) => t._id !== id));
+        alert('Testimonial deleted!');
+      } else {
+        const data = await res.json();
+        alert('Failed to delete: ' + (data.message || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error('Failed to delete testimonial:', err);
+      alert('Failed to delete testimonial');
+    }
   };
 
   return (
@@ -125,7 +172,7 @@ export default function TestimonialsAdmin() {
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         {testimonials.map((t) => (
           <Motion.div
-            key={t.id}
+            key={t._id}
             whileHover={{ scale: 1.05 }}
             className="bg-white/10 backdrop-blur-lg
             rounded-2xl p-6 shadow-xl"
@@ -143,7 +190,7 @@ export default function TestimonialsAdmin() {
             </p>
 
             <button
-              onClick={() => deleteTestimonial(t.id)}
+              onClick={() => deleteTestimonial(t._id)}
               className="mt-4 text-sm text-red-400 hover:underline"
             >
               🗑 Delete

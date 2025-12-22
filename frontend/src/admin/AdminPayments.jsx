@@ -9,22 +9,39 @@ export default function AdminPayments() {
 
   const fetchTxs = async () => {
     setLoading(true);
-    const token = localStorage.getItem('token');
-    const res = await fetch(`${API_BASE}/transactions`, { headers: { Authorization: `Bearer ${token}` } });
-    const data = await res.json();
-    setTxs(data.transactions || []);
+    const token = localStorage.getItem('adminToken');
+    try {
+      const res = await fetch(`${API_BASE}/transactions`, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+      const data = await res.json();
+      if (data.transactions) {
+        setTxs(data.transactions);
+      }
+    } catch (err) {
+      console.error('Failed to fetch transactions:', err);
+    }
     setLoading(false);
   };
 
   const deleteTransaction = async (id) => {
     if (!confirm('Are you sure you want to delete this transaction?')) return;
-    const token = localStorage.getItem('token');
-    const res = await fetch(`${API_BASE}/transactions/${id}`, { 
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` } 
-    });
-    if (res.ok) {
-      setTxs(txs.filter(t => t._id !== id));
+    const token = localStorage.getItem('adminToken');
+    try {
+      const res = await fetch(`${API_BASE}/transactions/${id}`, { 
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+      if (res.ok) {
+        setTxs(txs.filter(t => t._id !== id));
+        alert('Transaction deleted successfully!');
+      } else {
+        const data = await res.json();
+        alert('Failed to delete: ' + (data.message || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error('Failed to delete transaction:', err);
+      alert('Failed to delete transaction');
     }
   };
 
@@ -51,14 +68,19 @@ export default function AdminPayments() {
         <button onClick={exportCSV} className="px-4 py-2 bg-green-500 rounded ml-auto">Export CSV</button>
       </div>
 
-      {loading ? <p>Loading...</p> : (
+      {loading ? <p>Loading...</p> : txs.length === 0 ? (
+        <p className="text-gray-400 py-10">No transactions found</p>
+      ) : (
         <div className="grid gap-4">
           {txs.map(t => (
             <div key={t._id} className="bg-white/10 p-4 rounded-xl">
               <div className="flex justify-between items-center">
                 <div>
-                  <div className="font-semibold">{t.email || t.phone}</div>
-                  <div className="text-sm text-gray-300">{t.courseName} — {t.provider}</div>
+                  <div className="font-semibold">{t.email || t.phone || 'Unknown'}</div>
+                  <div className="text-sm text-gray-300">
+                    {t.courseName || 'No course'} — {t.provider || 'N/A'}
+                    {t.provider === 'demo' && <span className="text-yellow-400 ml-2">(Demo)</span>}
+                  </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">

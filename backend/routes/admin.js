@@ -38,10 +38,57 @@ router.get('/courses', auth, requireAdmin, async (req, res) => {
   res.json({ courses });
 });
 
+// Update course (admin)
+router.put('/courses/:id', auth, requireAdmin, async (req, res) => {
+  try {
+    const course = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!course) return res.status(404).json({ message: 'Course not found' });
+    res.json({ course });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Delete course (admin)
+router.delete('/courses/:id', auth, requireAdmin, async (req, res) => {
+  try {
+    const course = await Course.findByIdAndDelete(req.params.id);
+    if (!course) return res.status(404).json({ message: 'Course not found' });
+    res.json({ message: 'Course deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // Add testimonial
 router.post('/testimonials', auth, requireAdmin, async (req, res) => {
-  const t = await Testimonial.create(req.body);
-  res.json({ testimonial: t });
+  try {
+    const t = await Testimonial.create(req.body);
+    res.json({ testimonial: t });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// List testimonials (admin)
+router.get('/testimonials', auth, requireAdmin, async (req, res) => {
+  try {
+    const testimonials = await Testimonial.find();
+    res.json({ testimonials });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Delete testimonial (admin)
+router.delete('/testimonials/:id', auth, requireAdmin, async (req, res) => {
+  try {
+    const testimonial = await Testimonial.findByIdAndDelete(req.params.id);
+    if (!testimonial) return res.status(404).json({ message: 'Testimonial not found' });
+    res.json({ message: 'Testimonial deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 // Admin login
@@ -155,6 +202,34 @@ router.post('/reset-password', async (req, res) => {
     await user.save();
 
     res.json({ message: 'Password reset successful' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// List transactions (admin)
+router.get('/transactions', auth, requireAdmin, async (req, res) => {
+  try {
+    const Transaction = require('../models/Transaction');
+    const transactions = await Transaction.find().sort({ createdAt: -1 });
+    res.json({ transactions });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Search transactions by email or course (admin)
+router.get('/transactions/search', auth, requireAdmin, async (req, res) => {
+  try {
+    const { q } = req.query;
+    const Transaction = require('../models/Transaction');
+    const transactions = await Transaction.find({
+      $or: [
+        { email: { $regex: q, $options: 'i' } },
+        { courseName: { $regex: q, $options: 'i' } }
+      ]
+    }).sort({ createdAt: -1 });
+    res.json({ transactions });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

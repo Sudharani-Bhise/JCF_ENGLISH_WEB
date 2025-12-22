@@ -8,9 +8,9 @@ export default function useRequireAdmin() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const rawUser = localStorage.getItem("currentUser");
-    const token = localStorage.getItem("token");
-    if (!admin && (!rawUser || !token)) {
+    const rawAdmin = localStorage.getItem("adminUser");
+    const adminToken = localStorage.getItem("adminToken");
+    if (!admin && (!rawAdmin || !adminToken)) {
       navigate("/admin-login");
     }
   }, [admin, navigate]);

@@ -13,18 +13,12 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await login(email, password); // calls /api/auth/login
+    const result = await login(email, password);
     if (!result || !result.success) {
       setError(result?.message || "Login failed");
       return;
     }
-    // After login, verify stored user role is admin
-    const u = JSON.parse(localStorage.getItem('currentUser') || 'null');
-    if (!u || u.role !== 'admin') {
-      setError('Not an admin');
-      return;
-    }
-    navigate('/admin');
+    navigate('/profile');
   };
 
   return (

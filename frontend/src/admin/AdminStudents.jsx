@@ -8,20 +8,21 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api';
 
 export default function AdminStudents() {
   const [students, setStudents] = useState([]);
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   useRequireAdmin();
 
   useEffect(() => {
-    if (!user || user.role !== "admin") {
-      navigate("/admin-login");
-    }
-  }, [user, navigate]);
-
-  useEffect(() => {
     // Fetch students from backend
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("adminToken");
+    const currentUser = JSON.parse(localStorage.getItem("adminUser") || 'null');
+    
+    // If not admin, don't fetch
+    if (!currentUser || currentUser.role !== 'admin') {
+      navigate("/admin-login");
+      return;
+    }
+
     fetch(`${API_BASE}/admin/users`, {
       headers: {
         "Content-Type": "application/json",
@@ -30,18 +31,20 @@ export default function AdminStudents() {
     })
       .then(res => {
         if (res.status === 401 || res.status === 403) {
-          // Not authorized, redirect to login
-          window.location.href = "/admin-login";
-          return [];
+          navigate("/admin-login");
+          return null;
         }
         return res.json();
       })
-      .then(data => setStudents(data.users || []));
-  }, []);
+      .then(data => {
+        if (data) setStudents(data.users || []);
+      })
+      .catch(err => console.error('Failed to fetch students:', err));
+  }, [navigate]);
 
   // Delete student function
   const handleDelete = async (id) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("adminToken");
     if (!window.confirm("Are you sure you want to delete this student?")) return;
     const res = await fetch(`${API_BASE}/admin/users/${id}`, {
       method: "DELETE",

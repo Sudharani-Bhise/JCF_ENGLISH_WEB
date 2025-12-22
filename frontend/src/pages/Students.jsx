@@ -1,7 +1,9 @@
 import { motion as Motion } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 
-// videos
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api';
+
+// Fallback videos if API fails
 import student1 from "../assets/media/videos/student1.mp4";
 import student8 from "../assets/media/videos/student8.mp4";
 import student2 from "../assets/media/videos/student12.mp4";
@@ -13,7 +15,8 @@ import student6 from "../assets/media/videos/student6.mp4";
 import student10 from "../assets/media/videos/student10.mp4";
 import student11 from "../assets/media/videos/student11.mp4";
 import student4 from "../assets/media/videos/student4.mp4";
-const videos = [
+
+const fallbackVideos = [
   student1,
   student2,
   student3,
@@ -37,7 +40,48 @@ const sectionAnim = {
 };
 
 export default function Students() {
+  const [videos, setVideos] = useState(fallbackVideos);
   const scrollRef = useRef(null);
+
+  // Fetch videos from API
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/videos?type=student`);
+        const data = await res.json();
+        console.log('Fetched student videos:', data.videos);
+        
+        if (data.videos && data.videos.length > 0) {
+          // Filter videos with valid URLs
+          const validApiVideos = data.videos
+            .filter(v => v.url && v.url.trim())
+            .map(v => ({
+              url: v.url,
+              title: v.title || `Video`,
+              description: v.description || '',
+              _id: v._id,
+              fromAPI: true
+            }));
+          
+          console.log('Valid API videos:', validApiVideos);
+          
+          // Combine API videos with fallback videos
+          if (validApiVideos.length > 0) {
+            setVideos([...validApiVideos, ...fallbackVideos]);
+          } else {
+            setVideos(fallbackVideos);
+          }
+        } else {
+          setVideos(fallbackVideos);
+        }
+      } catch (err) {
+        console.error('Failed to fetch videos:', err);
+        setVideos(fallbackVideos);
+      }
+    };
+
+    fetchVideos();
+  }, []);
 
   const scrollLeft = () => {
     scrollRef.current.scrollBy({ left: -320, behavior: "smooth" });
@@ -102,19 +146,65 @@ export default function Students() {
             ref={scrollRef}
             className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar pb-4"
           >
-            {videos.map((video, index) => (
-            <Motion.div
-                key={index}
-                whileHover={{ scale: 1.05 }}
-                className="min-w-55 sm:min-w-80 bg-black rounded-2xl shadow-xl overflow-hidden"
-              >
-                <video
-                  src={video}
-                  controls
-                  className="w-full h-56 object-cover"
-                />
-              </Motion.div>
-            ))}
+            {videos && videos.length > 0 ? (
+              videos.map((video, index) => {
+                // Handle both URL strings and video objects from API
+                const videoUrl = typeof video === 'string' ? video : video.url;
+                const videoTitle = typeof video === 'string' ? `Video ${index + 1}` : (video.title || `Video ${index + 1}`);
+                
+                // Check if URL is valid
+                const isValidUrl = videoUrl && videoUrl.trim().length > 0;
+                const isYoutube = isValidUrl && videoUrl.includes('youtube');
+                
+                return (
+                  <Motion.div
+                    key={`${typeof video === 'string' ? 'local' : video._id || 'api'}-${index}`}
+                    whileHover={{ scale: 1.05 }}
+                    className="min-w-55 sm:min-w-80 bg-black rounded-2xl shadow-xl overflow-hidden"
+                  >
+                    {isYoutube ? (
+                      <iframe 
+                        src={videoUrl.replace('watch?v=','embed/')} 
+                        className="w-full h-56" 
+                        title={videoTitle}
+                        allowFullScreen
+                        onError={(e) => {
+                          console.error('YouTube embed failed:', videoUrl);
+                          e.target.style.display = 'none';
+                        }}
+                      ></iframe>
+                    ) : isValidUrl ? (
+                      <video
+                        src={videoUrl}
+                        controls
+                        className="w-full h-56 object-cover bg-gray-800"
+                        title={videoTitle}
+                        onError={(e) => {
+                          console.error('Video failed to load:', videoUrl);
+                          e.target.style.display = 'none';
+                          // Show error message
+                          const parent = e.target.parentElement;
+                          if (parent && !parent.querySelector('.error-msg')) {
+                            const err = document.createElement('div');
+                            err.className = 'error-msg w-full h-56 bg-gray-800 flex items-center justify-center text-red-400 text-sm';
+                            err.textContent = 'Video failed to load';
+                            parent.appendChild(err);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-56 bg-gray-800 flex items-center justify-center">
+                        <p className="text-gray-400 text-sm">Invalid or missing video URL</p>
+                      </div>
+                    )}
+                  </Motion.div>
+                );
+              })
+            ) : (
+              <div className="w-full flex items-center justify-center py-10">
+                <p className="text-gray-400">No videos available</p>
+              </div>
+            )}
           </div>
         </div>
       </Motion.section>

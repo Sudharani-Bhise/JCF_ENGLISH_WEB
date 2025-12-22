@@ -60,7 +60,29 @@ router.post('/enroll', auth, async (req, res) => {
       console.error('Enrollment notification or transaction error:', notifyErr.message);
     }
 
-    res.json({ message: 'Enrolled', courses: user.courses });
+    res.json({ message: 'Enrolled', courses: user.courses, user: { id: user._id, name: user.name, email: user.email, courses: user.courses } });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Delete course (admin)
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const course = await Course.findByIdAndDelete(req.params.id);
+    if (!course) return res.status(404).json({ message: 'Course not found' });
+    res.json({ message: 'Course deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Update course (admin)
+router.put('/:id', auth, async (req, res) => {
+  try {
+    const course = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!course) return res.status(404).json({ message: 'Course not found' });
+    res.json({ course });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -28,4 +28,15 @@ router.get('/', auth, requireAdmin, async (req, res) => {
   }
 });
 
+// Delete transaction (admin)
+router.delete('/:id', auth, requireAdmin, async (req, res) => {
+  try {
+    const tx = await Transaction.findByIdAndDelete(req.params.id);
+    if (!tx) return res.status(404).json({ message: 'Transaction not found' });
+    res.json({ message: 'Transaction deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

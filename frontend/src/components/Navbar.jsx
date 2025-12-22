@@ -76,48 +76,60 @@ export default function Navbar() {
               </Link>
             </>
           ) : (
-            <div className="relative">
-
-              {/* PROFILE BUTTON */}
-              <button
-                onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center gap-2 px-4 py-2
-                bg-white/10 rounded-full hover:bg-white/20 transition"
-              >
-                <span className="w-8 h-8 flex items-center justify-center
-                  rounded-full bg-pink-500 text-white font-bold">
-                  {user.name.charAt(0).toUpperCase()}
-                </span>
-                <span className="text-sm">{user.name}</span>
-              </button>
-
-              {/* DROPDOWN */}
-              {profileOpen && (
-                <Motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute right-0 mt-3 w-44
-                  bg-[#1f1b3a] rounded-xl shadow-xl
-                  border border-white/10 overflow-hidden"
+            <>
+              {/* ADMIN BUTTON - Only if user is admin */}
+              {user?.role === 'admin' && (
+                <Link
+                  to="/admin"
+                  className="px-4 py-2 rounded-full border border-orange-400
+                  text-orange-400 hover:bg-orange-400 hover:text-white transition"
                 >
-                  <Link
-                    to="/profile"
-                    onClick={() => setProfileOpen(false)}
-                    className="block px-4 py-3 hover:bg-white/10"
-                  >
-                    👤 My Profile
-                  </Link>
-
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-3
-                    text-red-400 hover:bg-white/10"
-                  >
-                    🚪 Logout
-                  </button>
-                </Motion.div>
+                  🔧 Admin
+                </Link>
               )}
-            </div>
+              
+              <div className="relative">
+                {/* PROFILE BUTTON */}
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="flex items-center gap-2 px-4 py-2
+                  bg-white/10 rounded-full hover:bg-white/20 transition"
+                >
+                  <span className="w-8 h-8 flex items-center justify-center
+                    rounded-full bg-pink-500 text-white font-bold">
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
+                  <span className="text-sm">{user.name}</span>
+                </button>
+
+                {/* DROPDOWN */}
+                {profileOpen && (
+                  <Motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute right-0 mt-3 w-44
+                    bg-[#1f1b3a] rounded-xl shadow-xl
+                    border border-white/10 overflow-hidden"
+                  >
+                    <Link
+                      to="/profile"
+                      onClick={() => setProfileOpen(false)}
+                      className="block px-4 py-3 hover:bg-white/10"
+                    >
+                      👤 My Profile
+                    </Link>
+
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-3
+                      text-red-400 hover:bg-white/10"
+                    >
+                      🚪 Logout
+                    </button>
+                  </Motion.div>
+                )}
+              </div>
+            </>
           )}
         </nav>
 

@@ -1,7 +1,10 @@
 import { motion as Motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import useRequireLogin from "../hooks/useRequireLogin";
 
-const courses = [
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api';
+
+const defaultCourses = [
   {
     id: "spoken-beginner",
     title: "Spoken English (Beginner)",
@@ -47,6 +50,37 @@ const fadeUp = {
 
 export default function Courses() {
   const requireLogin = useRequireLogin();
+  const [courses, setCourses] = useState(defaultCourses);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/courses`);
+        const data = await res.json();
+        if (data.courses && data.courses.length > 0) {
+          // Map database courses to include necessary fields for display
+          const mappedApiCourses = data.courses.map(c => ({
+            id: c._id,
+            title: c.name,
+            desc: c.description || 'Course description',
+            duration: c.duration || '3 Months',
+            level: c.level || 'All Levels',
+            price: `₹${c.price || 0}`
+          }));
+          
+          // Merge: Keep defaults + add new ones from API that aren't in defaults
+          const defaultNames = defaultCourses.map(c => c.title.toLowerCase());
+          const newCourses = mappedApiCourses.filter(c => 
+            !defaultNames.includes(c.title.toLowerCase())
+          );
+          setCourses([...defaultCourses, ...newCourses]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch courses:', err);
+      }
+    };
+    fetchCourses();
+  }, []);
 
   return (
     <div className="min-h-screen bg-linear-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] text-white">

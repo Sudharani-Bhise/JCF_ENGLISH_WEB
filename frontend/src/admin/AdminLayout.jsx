@@ -3,14 +3,15 @@ import { useEffect } from "react";
 import { useAdminAuth } from "../context/AdminAuthContext";
 
 export default function AdminLayout() {
-  const { admin, logout } = useAdminAuth();
+  const { admin, logout, adminReady } = useAdminAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!admin) {
+    // Only redirect if we're sure admin is not logged in
+    if (adminReady && !admin) {
       navigate("/admin-login");
     }
-  }, [admin, navigate]);
+  }, [adminReady, admin, navigate]);
 
   const handleLogout = () => {
     logout();
@@ -34,6 +35,9 @@ export default function AdminLayout() {
           </NavLink>
           <NavLink to="/admin/courses" className={linkClass}>
             Courses
+          </NavLink>
+          <NavLink to="/admin/videos" className={linkClass}>
+            Videos
           </NavLink>
           <NavLink to="/admin/testimonials" className={linkClass}>
             Testimonials

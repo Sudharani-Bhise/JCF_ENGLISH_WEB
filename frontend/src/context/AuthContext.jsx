@@ -83,7 +83,8 @@ export function AuthProvider({ children }) {
       });
       const data = await res.json();
       if (!res.ok) return { success: false, message: data.message };
-      const updatedUser = { ...user, courses: data.courses };
+      // Use the returned user object which has all updated courses
+      const updatedUser = data.user || { ...user, courses: data.courses };
       localStorage.setItem('currentUser', JSON.stringify(updatedUser));
       setUser(updatedUser);
       return { success: true };
