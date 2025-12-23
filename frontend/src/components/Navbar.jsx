@@ -74,6 +74,14 @@ export default function Navbar() {
               >
                 Register
               </Link>
+
+              <Link
+                to="/admin-login"
+                className="px-4 py-2 rounded-full border border-orange-400
+                text-orange-400 hover:bg-orange-400 hover:text-white transition"
+              >
+                🔧 Admin
+              </Link>
             </>
           ) : (
             <>
@@ -167,9 +175,15 @@ export default function Navbar() {
               <>
                 <Link to="/login" onClick={() => setOpen(false)}>Login</Link>
                 <Link to="/register" onClick={() => setOpen(false)}>Register</Link>
+                <Link to="/admin-login" onClick={() => setOpen(false)}>🔧 Admin</Link>
               </>
             ) : (
               <>
+                {user?.role === 'admin' && (
+                  <Link to="/admin" onClick={() => setOpen(false)}>
+                    🔧 Admin
+                  </Link>
+                )}
                 <Link to="/profile" onClick={() => setOpen(false)}>
                   👤 My Profile
                 </Link>
