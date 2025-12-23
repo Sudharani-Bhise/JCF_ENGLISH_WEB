@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = "http://localhost:4000/api"; // or use your env variable
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000/api";
 
 export default function ForgotPassword() {
   const [step, setStep] = useState("email"); // 'email' | 'verify' | 'done'
