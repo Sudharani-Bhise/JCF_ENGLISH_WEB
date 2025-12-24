@@ -77,16 +77,7 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              {/* ADMIN BUTTON - Only if user is admin */}
-              {user?.role === 'admin' && (
-                <Link
-                  to="/admin"
-                  className="px-4 py-2 rounded-full border border-orange-400
-                  text-orange-400 hover:bg-orange-400 hover:text-white transition"
-                >
-                  🔧 Admin
-                </Link>
-              )}
+
               
               <div className="relative">
                 {/* PROFILE BUTTON */}
@@ -171,11 +162,7 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                {user?.role === 'admin' && (
-                  <Link to="/admin" onClick={() => setOpen(false)}>
-                    🔧 Admin
-                  </Link>
-                )}
+
                 <Link to="/profile" onClick={() => setOpen(false)}>
                   👤 My Profile
                 </Link>

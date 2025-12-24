@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion as Motion } from "framer-motion";
 import { useAdminAuth } from "../context/AdminAuthContext";
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api';
+
 export default function AdminLogin() {
   const { login } = useAdminAuth();
   const navigate = useNavigate();
@@ -24,7 +26,7 @@ export default function AdminLogin() {
     if (!email) return setMessage({ type: "error", text: "Please enter email first" });
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:4000/api/admin/forgot-password", {
+      const res = await fetch(`${API_BASE}/admin/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -46,7 +48,7 @@ export default function AdminLogin() {
     if (newPassword.length < 6) return setMessage({ type: "error", text: "Password must be 6+ chars" });
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:4000/api/admin/reset-password", {
+      const res = await fetch(`${API_BASE}/admin/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp, newPassword }),

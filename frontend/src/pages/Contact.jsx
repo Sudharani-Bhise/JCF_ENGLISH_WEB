@@ -3,6 +3,8 @@ import { useState } from "react";
 import useRequireLogin from "../hooks/useRequireLogin";
 import { useAuth } from "../context/AuthContext";
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api';
+
 export default function Contact() {
   const requireLogin = useRequireLogin();
   const { user } = useAuth(); // 🔑 check login
@@ -51,7 +53,7 @@ export default function Contact() {
       JSON.stringify([...enquiries, newEnquiry])
     );
 
-    await fetch("http://localhost:4000/api/enquiries", {
+    await fetch(`${API_BASE}/enquiries`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, phone, message }),

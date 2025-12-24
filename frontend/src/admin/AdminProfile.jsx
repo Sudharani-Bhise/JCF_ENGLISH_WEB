@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useAdminAuth } from "../context/AdminAuthContext";
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api';
+
 export default function AdminProfile() {
   const { admin, setAdmin } = useAdminAuth();
   const [name, setName] = useState("");
@@ -24,7 +26,7 @@ export default function AdminProfile() {
     setLoading(true);
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch("http://localhost:4000/api/admin/profile", {
+      const res = await fetch(`${API_BASE}/admin/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
