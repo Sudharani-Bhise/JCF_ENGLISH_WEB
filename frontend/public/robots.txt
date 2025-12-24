@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /admin
+Disallow: /admin-login
+# Optionally disallow API if you don't want it crawled
+# Disallow: /api
