@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin</title>
+  </head>
+  <body>
+    <script>
+      // Load the SPA index and inject it, preserving the current URL (/admin)
+      fetch('/index.html')
+        .then((r) => r.text())
+        .then((html) => {
+          document.open();
+          document.write(html);
+          document.close();
+        })
+        .catch(() => {
+          // Fallback: redirect to admin-login if fetch fails
+          window.location.replace('/admin-login');
+        });
+    </script>
+  </body>
+</html>
